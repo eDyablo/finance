@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+
+  app:
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    image: registry.heroku.com/finance202x/web
+    build: app
+    environment:
+      - DATABASE_URL=postgresql://postgres:p4s5w0rd@db/finance
+    env_file:
+      - secrets/env
+    ports:
+      - 5000:5000
+
+  migrate:
+    depends_on:
+      db:
+        condition: service_healthy
+    image: registry.heroku.com/finance202x/web
+    build: app
+    environment:
+      - DATABASE_URL=postgresql://postgres:p4s5w0rd@db/finance
+    env_file:
+      - secrets/env
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        if [ $$(find migrations -type d -empty) ]; then
+          venv/bin/python -m flask db init;
+        fi; venv/bin/python -m flask db stamp && venv/bin/python -m flask db migrate && venv/bin/python -m flask db upgrade
+    volumes:
+      - ./app/migrations:/opt/finance/migrations
+
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_DB=finance
+      - POSTGRES_PASSWORD=p4s5w0rd
+      - POSTGRES_USER=postgres
+    volumes:
+      - ./database:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          sudo -u $${POSTGRES_USER} -i; pg_isready
+          $${POSTGRES_DB:+--dbname=$${POSTGRES_DB}}
+          $${POSTGRES_USER:+--username=$${POSTGRES_USER}}
+      interval: 10s
+      timeout: 5s
+      retries: 5

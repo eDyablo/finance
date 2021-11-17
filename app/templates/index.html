@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Buy
+{% endblock %}
+
+{% block main %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Name</th>
+            <th>Shares</th>
+            <th colspan=1></th>
+            <th>Price</th>
+            <th>TOTAL</th>
+            <th colspan=1></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stock in owned %}
+        <tr>
+            <th scope="row">{{ stock["symbol"] }}</th>
+            <td>{{ stock["name"] }}</td>
+            <td>{{ stock["shares"] }}</td>
+            <td>
+                <form action="/buy" method="get">
+                    <input hidden name="symbol" value="{{ stock['symbol'] }}">
+                    <input class="btn btn-primary" type="submit" value="Buy">
+                </form>
+            </td>
+            <td>{{ stock["price"] | usd }}</td>
+            <td>{{ stock["total"] | usd }}</td>
+            <td>
+                <form action="/sell" method="get">
+                    <input hidden name="symbol" value="{{ stock['symbol'] }}">
+                    <input class="btn btn-primary" type="submit" value="Sell">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td>CASH</td>
+            <td colspan="4"></td>
+            <td>{{ cash | usd }}</td>
+            <td>
+                <form action="/cash" method="get">
+                    <input class="btn btn-primary" type="submit" value="Add">
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="5"></td>
+            <th scope="row">{{ total | usd }}</td>
+            <td colspan="1"></td>
+        </tr>
+    </tfoot>
+</table>
+{% endblock %}

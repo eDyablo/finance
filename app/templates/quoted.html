@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Quoted
+{% endblock %}
+
+{% block main %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Company</th>
+            <th>Price</th>
+            <th colspan="1"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ stock["symbol"] }}</td>
+            <td>{{ stock["name"] }}</td>
+            <td>{{ stock["price"] | usd }}</td>
+            <td>
+                <form action="/buy" method="get">
+                    <input hidden name="symbol" value="{{ stock['symbol'] }}">
+                    <input class="btn btn-primary" type="submit" value="Buy">
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
