@@ -10,6 +10,9 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from rq import Connection, Queue
+from redis import from_url
+
 # Make sure API key is set
 if not environ.get("IEX_API_KEY"):
     raise RuntimeError("IEX_API_KEY not set")
@@ -42,11 +45,10 @@ db.init_app(app)
 
 migrate.init_app(app, db)
 
-# Ensure responses aren't cached
-
 
 @app.after_request
 def after_request(response):
+    """Ensure responses aren't cached"""
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
@@ -195,7 +197,10 @@ def quote():
         if not symbol:
             return apology("must provide stock symbol")
 
-        stock = lookup(request.form.get("symbol"))
+        with Connection(from_url(environ.get("REDISTOGO_URL"))) as redis:
+            Queue(connection=redis).enqueue('tasks.lookup_ticker', symbol)
+
+        stock = lookup(symbol)
         if not stock:
             return apology("specified stock not found")
 

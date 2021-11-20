@@ -8,10 +8,13 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     image: registry.heroku.com/finance202x/web
     build: app
     environment:
-      - DATABASE_URL=postgresql://postgres:p4s5w0rd@db/finance
+      DATABASE_URL: postgresql://postgres:p4s5w0rd@db/finance
+      REDISTOGO_URL: redis://redis
     env_file:
       - secrets/env
     ports:
@@ -24,7 +27,7 @@ services:
     image: registry.heroku.com/finance202x/web
     build: app
     environment:
-      - DATABASE_URL=postgresql://postgres:p4s5w0rd@db/finance
+      DATABASE_URL: postgresql://postgres:p4s5w0rd@db/finance
     env_file:
       - secrets/env
     entrypoint:
@@ -40,9 +43,9 @@ services:
   db:
     image: postgres:alpine
     environment:
-      - POSTGRES_DB=finance
-      - POSTGRES_PASSWORD=p4s5w0rd
-      - POSTGRES_USER=postgres
+      POSTGRES_DB: finance
+      POSTGRES_PASSWORD: p4s5w0rd
+      POSTGRES_USER: postgres
     volumes:
       - ./database:/var/lib/postgresql/data
     healthcheck:
@@ -55,3 +58,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:alpine
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    depends_on:
+      redis:
+        condition: service_healthy
+    image: registry.heroku.com/finance202x/worker
+    build: worker
+    environment:
+      REDISTOGO_URL: redis://redis
