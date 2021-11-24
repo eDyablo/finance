@@ -74,3 +74,7 @@ def validate_password(password):
     if not re.search(r"^.*\d+.*$", password) and not re.search(r"^.*[^a-zA-Z0-9\s]+.*$", password):
         return "must have at least 1 numeric symbol or 1 special character"
     return "ok"
+
+def date(value):
+    """Format value as date"""
+    return value.strftime('%a, %b %-d %Y at %-H:%M:%S')

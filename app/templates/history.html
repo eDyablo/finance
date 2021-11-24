@@ -18,7 +18,7 @@ History
     <tbody>
         {% for record in history %}
         <tr>
-            <td>{{ record["time"] }}</td>
+            <td>{{ record["time"] | date }}</td>
             <td>{{ record["action"] }}</td>
             <th scope="row">{{ record["symbol"] }}</th>
             <td>{{ record["price"] | usd }}</td>

@@ -2,7 +2,7 @@ from decimal import Decimal
 from flask import Flask, redirect, request, render_template, session
 from flask_migrate import Migrate
 from flask_session import Session
-from helpers import apology, login_required, lookup, validate_password, usd
+from helpers import apology, login_required, lookup, validate_password, usd, date
 from models import db, Profile, Transaction, User
 from os import environ
 from sqlalchemy import desc, func
@@ -30,6 +30,7 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Custom filter
 app.jinja_env.filters["usd"] = usd
+app.jinja_env.filters["date"] = date
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
